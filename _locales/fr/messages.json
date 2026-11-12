@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Supprimez l’historique Chrome par mot-clé ou domaine. Vérifiez les résultats ou planifiez le nettoyage."
+  },
+  "open": {
+    "message": "Ouvrir Chrome History Cleaner"
+  }
+}

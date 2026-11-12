@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Borra el historial de Chrome por palabra clave o dominio. Revisa coincidencias o programa la limpieza."
+  },
+  "open": {
+    "message": "Abrir Chrome History Cleaner"
+  }
+}

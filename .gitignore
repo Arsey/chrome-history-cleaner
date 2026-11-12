@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+tests/.browser-profile/
+tests/__pycache__/
+*.zip
+tests/browser-test-*/
+tests/browser-desktop.png
+tests/browser-mobile.png
+release/icon-master.png
+chrome-history-cleaner-rules*.json
+*.pem

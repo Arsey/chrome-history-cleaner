@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "キーワードやドメインで Chrome の履歴を削除できます。削除対象の確認や自動削除の設定ができます。"
+  },
+  "open": {
+    "message": "Chrome History Cleaner を開く"
+  }
+}

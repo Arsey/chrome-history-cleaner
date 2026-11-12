@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Chrome-Verlauf nach Stichwort oder Domain löschen. Treffer vorher prüfen oder automatisch bereinigen."
+  },
+  "open": {
+    "message": "Chrome History Cleaner öffnen"
+  }
+}

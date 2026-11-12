@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Elimina voci dalla cronologia di Chrome per parola chiave o dominio. Controlla i risultati o pianifica la pulizia."
+  },
+  "open": {
+    "message": "Apri Chrome History Cleaner"
+  }
+}

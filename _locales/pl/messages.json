@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Usuwaj historię Chrome według słów kluczowych lub domen. Sprawdzaj dopasowania i planuj czyszczenie."
+  },
+  "open": {
+    "message": "Otwórz Chrome History Cleaner"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Remove Chrome history by keyword or domain. Preview matches or schedule automatic cleanup."
+  },
+  "open": {
+    "message": "Open Chrome History Cleaner"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome History Cleaner",
+  "version": "1.3.2",
+  "description": "__MSG_description__",
+  "minimum_chrome_version": "120",
+  "permissions": [
+    "history",
+    "storage",
+    "alarms",
+    "unlimitedStorage"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "__MSG_open__",
+    "default_icon": {
+      "16": "icons/cleaner-16.png",
+      "32": "icons/cleaner-32.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/cleaner-16.png",
+    "32": "icons/cleaner-32.png",
+    "48": "icons/cleaner-48.png",
+    "128": "icons/cleaner-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'; frame-src 'none'"
+  },
+  "default_locale": "en"
+}

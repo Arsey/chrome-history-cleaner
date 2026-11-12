@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Apague entradas do histórico do Chrome por palavra-chave ou domínio. Confira os resultados ou agende a limpeza."
+  },
+  "open": {
+    "message": "Abrir Chrome History Cleaner"
+  }
+}
