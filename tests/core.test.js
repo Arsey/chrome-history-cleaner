@@ -38,6 +38,20 @@ test('scan splits capped results and deduplicates inclusive boundaries', async (
   }},201,5);
   assert.equal(result.length,21); assert.ok(searches > 1);
 });
+test('scan includes existing visits at and beyond the wall clock cutoff', async t => {
+  t.mock.method(Date, 'now', () => 1000);
+  const visits = [999, 1000, 1000.75, 2000].map(lastVisitTime => ({
+    url: `https://example.org/${lastVisitTime}`, lastVisitTime
+  }));
+  const history = {search: async ({startTime, endTime, maxResults}) =>
+    visits.filter(visit => visit.lastVisitTime >= startTime && visit.lastVisitTime < endTime)
+      .slice(0, maxResults)
+  };
+  for (const limit of [10000, 3]) {
+    const result = await scanHistory(history, undefined, limit);
+    assert.deepEqual(new Set(result), new Set(visits));
+  }
+});
 test('scan fails closed on unresolvable saturation', async () => {
   await assert.rejects(scanHistory({search:async () => Array.from({length:5},(_,n)=>item(`https://x/${n}`))},2,5), /too dense/);
 });
@@ -65,6 +79,59 @@ test('manual cleanup requires preview, removes exactly previewed matches once', 
   const result = await engine.request({type:'clean',token:preview.token});
   assert.equal(result.deleted,1); assert.deepEqual(api.removed,['https://delete.example']);
   await assert.rejects(engine.request({type:'clean',token:preview.token}),/expired/);
+});
+test('exact URL rules preview and remove verified visits omitted by Chrome search', async () => {
+  const source = 'http://redirect.example/start';
+  const missing = 'https://unvisited.example/';
+  const destination = 'https://destination.example/';
+  const api = fakeApi([item(destination)]);
+  const lookups = [];
+  api.history.getVisits = async ({url}) => {
+    lookups.push(url);
+    return url === source ? [{visitTime:1000}] : [];
+  };
+  const engine = createEngine(api);
+  const rules = [rule(source), rule(source, {field:'url'}), rule(missing)];
+  await engine.request({type:'save',revision:0,settings:{...defaults(),rules}});
+  const preview = await engine.request({type:'preview'});
+  assert.deepEqual(preview.items, [{url:source}]);
+  assert.deepEqual(lookups, [source, missing]);
+  assert.deepEqual(api.removed, []);
+  await engine.request({type:'clean',token:preview.token});
+  assert.deepEqual(api.removed, [source]);
+});
+test('exact URL fallback never bypasses Protect or guesses an address from a keyword', async () => {
+  const source = 'http://redirect.example/start';
+  for (const rules of [
+    [rule('redirect')],
+    [rule(source, {field:'title'})],
+    [rule(source, {enabled:false})],
+    [rule(source), rule('redirect.example', {field:'domain',action:'keep'})],
+    [rule(source), rule('protected title', {field:'title',action:'keep'})],
+    [rule(source), rule('protected title', {field:'both',action:'keep'})]
+  ]) {
+    const api = fakeApi();
+    api.history.getVisits = async () => assert.fail('Unexpected exact URL query');
+    const engine = createEngine(api);
+    await engine.request({type:'save',revision:0,settings:{...defaults(),rules}});
+    assert.equal((await engine.request({type:'preview'})).count, 0);
+  }
+});
+test('automatic cleanup verifies only exact URLs from due rules', async () => {
+  const due = 'http://redirect.example/fast';
+  const later = 'http://redirect.example/slow';
+  const api = fakeApi();
+  api.history.getVisits = async ({url}) => {
+    assert.equal(url, due);
+    return [{visitTime:1000}];
+  };
+  let now = 1000;
+  const engine = createEngine(api, () => now);
+  const settings = {...defaults(), automatic:true, rules:[rule(due, {interval:1}), rule(later)]};
+  await engine.request({type:'save',revision:0,settings});
+  now += 60000;
+  await engine.runAutomatic();
+  assert.deepEqual(api.removed, [due]);
 });
 test('saving rules invalidates preview, automation off clears alarm', async () => {
   const api = fakeApi([item('https://delete.example')]); const engine = createEngine(api);

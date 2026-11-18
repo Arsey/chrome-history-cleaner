@@ -17,6 +17,7 @@ Automatic cleanup is off when you install the extension.
 A **Remove** rule selects pages to delete. A **Protect** rule keeps matching pages even when a Remove rule also matches.
 
 - Keywords can match the address, the page title, or both. The extension checks the original and decoded address. Matches ignore letter case unless you enable **Match letter case**.
+- Chrome omits some visits, such as redirect sources, from keyword search. Enter their full HTTP or HTTPS address with **URL** or **URL or title** to check those visits directly. A Protect rule that uses titles prevents this direct lookup because Chrome supplies no title with the visit.
 - A domain rule matches the exact hostname and its subdomains. Enter a hostname such as `example.com`.
 - Each removal rule can use the default interval or its own interval in minutes. Saving changes restarts the timers. A page can be removed as soon as any matching removal rule is due. Protect rules apply to every cleanup.
 - **Stop automatic cleanup** turns off the schedule and stops pending deletions. Chrome may finish a deletion it has already started.
@@ -26,6 +27,7 @@ A **Remove** rule selects pages to delete. A **Protect** rule keeps matching pag
 
 - Chrome removes **every visit to each matching address**. Deletion is permanent and can affect other devices if Chrome syncs your history.
 - The preview displays up to 300 addresses and gives the full count. Confirming removal deletes the full preview set. Preview again if it expires, if another cleanup runs, or if you change your rules.
+- Preview and scheduled cleanup scan the visits that Chrome's history API makes available to the current profile, including newly recorded visits. Chrome's History page can also show entries from synced web history that the extension API cannot see.
 - A large preview can exceed the 4 MB storage limit. Narrow your rules and try again. Cleanup starts only after the history scan finishes.
 - Chrome must be running for scheduled cleanup. Sleep can delay it. If Chrome interrupts a cleanup, some entries may already have been removed.
 

@@ -11,6 +11,8 @@ Local Manifest V3 Chrome extension. Keep behavior understandable: literal keywor
 - Use isolated browser profiles and synthetic history for integration tests. Never clean real browsing history as a development check.
 - Preserve default-off automation and import's automatic-off behavior.
 - Never silently truncate a history scan or delete before a complete scan succeeds.
+- Chrome search can omit redirect sources. Use getVisits for explicit HTTP(S) URLs, and skip this fallback if an enabled Protect rule may need a title.
+- Keep the final scan boundary independent of Date.now(). Chrome uses an exclusive upper bound and stores submillisecond visit timestamps.
 - Never log URLs, titles, keywords, browser history, credentials or other personal content.
 - Update README for changes to deletion semantics, permissions or schedule behavior.
 
