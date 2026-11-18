@@ -45,15 +45,17 @@ export function shouldRemove(item, rules) {
     !active.some(rule => rule.action === 'keep' && match(item, rule));
 }
 
-export async function scanHistory(history, now = Date.now(), limit = 10000) {
+// Chrome's end time is exclusive and visit timestamps can be ahead of the JS clock.
+// Scan through JavaScript's maximum date so the wall clock cannot exclude stored visits.
+export async function scanHistory(history, endOfHistory = 8_640_000_000_000_001, limit = 10000) {
   const found = new Map();
-  const windows = [[0, now]];
+  const windows = [[0, endOfHistory]];
   while (windows.length) {
     const [startTime, endTime] = windows.pop();
     const items = await history.search({text: '', startTime, endTime, maxResults: limit});
     if (items.length >= limit) {
       if (endTime - startTime <= 1) throw new Error('History is too dense to scan completely. No cleanup started.');
-      const middle = Math.floor((startTime + endTime) / 2);
+      const middle = startTime + Math.floor((endTime - startTime) / 2);
       windows.push([startTime, middle], [middle, endTime]);
     } else {
       for (const item of items) {
@@ -64,4 +66,27 @@ export async function scanHistory(history, now = Date.now(), limit = 10000) {
     }
   }
   return [...found.values()];
+}
+
+export async function findHistoryMatches(history, rules) {
+  const items = await scanHistory(history);
+  const matches = items.filter(item => shouldRemove(item, rules));
+
+  // getVisits can verify a redirect source omitted by search, but cannot supply
+  // its title. Skip these extra candidates when a Protect rule needs the title.
+  if (rules.some(rule => rule.enabled && rule.action === 'keep' &&
+      (rule.field === 'title' || rule.field === 'both'))) return matches;
+
+  const checked = new Set(items.map(item => item.url));
+  for (const rule of rules) {
+    if (!rule.enabled || rule.action !== 'remove' ||
+        (rule.field !== 'url' && rule.field !== 'both') ||
+        !/^https?:\/\/[^/\s]/i.test(rule.value) || !URL.canParse(rule.value)) continue;
+    const {href: url} = new URL(rule.value);
+    const item = {url};
+    if (checked.has(url) || !match(item, rule) || !shouldRemove(item, rules)) continue;
+    checked.add(url);
+    if ((await history.getVisits({url})).length) matches.push(item);
+  }
+  return matches;
 }

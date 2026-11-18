@@ -1,4 +1,4 @@
-import {defaults, validate, shouldRemove, scanHistory} from './core.js';
+import {defaults, validate, findHistoryMatches} from './core.js';
 export const alarmName = 'history-cleanup';
 export const previewLifetime = 10 * 60 * 1000;
 export const previewByteLimit = 4 * 1024 * 1024;
@@ -63,9 +63,9 @@ export function createEngine(api, now = Date.now) {
     const due = new Set(deadlines.filter(entry => entry.due <= now()).map(entry => entry.index));
     if (!due.size) return;
     const rules = settings.rules.filter((rule, index) => rule.action === 'keep' || due.has(index));
-    const items = await scanHistory(api.history);
+    const items = await findHistoryMatches(api.history, rules);
     await api.storage.session.remove('preview');
-    const result = await clean(items.filter(item => shouldRemove(item, rules)).map(item => item.url), runGeneration);
+    const result = await clean(items.map(item => item.url), runGeneration);
     if (!result.cancelled) {
       await api.storage.local.set({timings: deadlines.map(entry =>
         due.has(entry.index) ? {...entry, due: now() + entry.interval * 60000} : entry)});
@@ -97,7 +97,7 @@ export function createEngine(api, now = Date.now) {
     if (message.type === 'preview') {
       await api.storage.session.remove('preview');
       const current = await state();
-      const items = (await scanHistory(api.history)).filter(item => shouldRemove(item, current.settings.rules));
+      const items = await findHistoryMatches(api.history, current.settings.rules);
       if (generation !== runGeneration) throw new UserError('Scan cancelled. Preview again.');
       const token = crypto.randomUUID();
       const preview = {token, urls: items.map(item => item.url), revision: current.revision, expires: now() + previewLifetime};
